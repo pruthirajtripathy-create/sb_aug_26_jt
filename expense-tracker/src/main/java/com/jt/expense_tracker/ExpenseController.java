@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ExpenseController {
     private final JdbcTemplate jdbcTemplate;
+    private static final String EXPENSES_TABLE="expenses";
 
     // public ExpenseController(JdbcTemplate jdbcTemplate){
     //     this.jdbcTemplate=jdbcTemplate;
@@ -24,7 +27,7 @@ public class ExpenseController {
     @RequestMapping(value="/expenses", method= RequestMethod.GET)
 
     public List<Expense> getExpenses(){
-        String query="SELECT * FROM expenses";
+        String query="SELECT * FROM %s".formatted( EXPENSES_TABLE);
         List<Expense> expenses=new ArrayList<>();
         // jdbcTemplate.query(query, (resultSet) -> {
         //  System.out.println("id is" + resultSet.getInt("id"));
@@ -52,9 +55,27 @@ public class ExpenseController {
         // // return expenses;
 
           return jdbcTemplate.query(query, new BeanPropertyRowMapper<Expense>(Expense.class));
+
+
        
       
 
+    }
+    @RequestMapping(value = "/expenses/{id}",method = RequestMethod.GET)
+    public Expense getExpenseById(@PathVariable int id){
+        // System.out.println("id is "+id);
+
+        String sql="select * from %s where id=?".formatted(EXPENSES_TABLE);
+      Expense expense=  jdbcTemplate.queryForObject
+      (sql, new BeanPropertyRowMapper<>(Expense.class),id);
+         return expense;
+    }
+
+    @RequestMapping(value = "/expenses",method = RequestMethod.POST)
+    public Expense createExpense(@RequestBody Expense expense){
+    var sql="insert into %s (title,category,price,date) values(?,?,?,?)".formatted(EXPENSES_TABLE);
+    jdbcTemplate.update(sql, expense.getTitle(),expense.getCategory(),expense.getPrice(),expense.getDate());
+        return expense;
     }
     
 }
