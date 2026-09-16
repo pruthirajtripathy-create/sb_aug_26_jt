@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const ExpenseList = ({expenses, getExpenses}) => {
+const ExpenseList = ({expenses, getExpenses, setEditingExpense}) => {
 
   const handleDelete = async (expenseId) => {
     if(confirm("Are you sure want to delete the Expense ?")) {
@@ -16,6 +16,10 @@ const ExpenseList = ({expenses, getExpenses}) => {
       }
     }
   }
+
+   function handleEdit(expense){
+    setEditingExpense(expense)
+   }
 
   return (
     <div className='bg-white rounded-2xl shadow-md p-6 mb-6'>
@@ -57,7 +61,7 @@ const ExpenseList = ({expenses, getExpenses}) => {
 
                   <td className='px-4 py-3'>
                     <div className='flex gap-2 justify-center'>
-                      <button className='bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg px-3 py-1.5 transition-colors duration-200 text-xs'>Edit</button>
+                      <button onClick={()=>handleEdit(exp)} className='bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg px-3 py-1.5 transition-colors duration-200 text-xs'>Edit</button>
                       <button onClick={() => handleDelete(exp.id)} className='bg-red-400 hover:bg-red-500 text-white font-semibold rounded-lg px-3 py-1.5 transition-colors duration-200 text-xs'>Delete</button>
                     </div>
                   </td>

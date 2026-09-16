@@ -1,23 +1,62 @@
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-const ExpenseForm = ({getExpenses}) => {
+
+const ExpenseForm = ({getExpenses, editingExpense, setEditingExpense}) => {
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
   const [price, setPrice] = useState('')
   const [date, setDate] = useState('')
 
+  useEffect(()=>{
+    
+    if(editingExpense){
+      setErrors({})
+    setTitle(editingExpense.title)
+     setCategory(editingExpense.category)
+      setPrice(editingExpense.price)
+       setDate(editingExpense.date)
+
+       scrollTo({top:0, behavior:'smooth'})
+  }
+
+  },[editingExpense])
+
+ 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     const expense = {
-      id: 0,
+      id: editingExpense ? editingExpense.id:0,
       title,
       price,
       category,
       date
     }
+
+    if(editingExpense){
+      await updateExpense(expense)
+    }else{
     await createExpense(expense)
+    }
   }
+   async function updateExpense(expense) {
+    try {
+      const response = await axios.put("http://localhost:1211/expenses", expense)
+  
+      if(response.status === 202) {
+        getExpenses()
+        clearForm()
+        setEditingExpense(null)
+      } else {
+        alert("Something went wrong !!!")
+      }
+    } catch(err) {
+      console.log("Some Error occurred:-", err)
+    }
+  }
+
 
   async function createExpense(expense) {
     try {
@@ -63,10 +102,14 @@ const ExpenseForm = ({getExpenses}) => {
         break;
     }
   }
+  const handleCancel=()=>{
+    setEditingExpense(null)
+    clearForm()
+  }
 
   return (
     <div className='bg-white rounded-2xl shadow-md p-6 mb-6'>
-      <h2 className='text-xl font-semibold text-gray-700 mb-4'>Add Expense</h2>
+      <h2 className='text-xl font-semibold text-gray-700 mb-4'>{editingExpense ? 'Edit':'Add'} Expense</h2>
 
       <form action={"www.ggogle.com"} onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         {/* Title */}
@@ -105,10 +148,23 @@ const ExpenseForm = ({getExpenses}) => {
 
         {/* Add Expense Button */}
         <div className='mt-5'>
+          {
+            editingExpense ?
+            <div className='flex gap-2'>
+            <button className='bg-green-500 hover:bg-green-600 px-6 py-3 rounded-lg text-white text-lg font-medium transition-colors duration-200' >
+            Update Expense
+          </button>
+          <button onClick={handleCancel} className='bg-yellow-500 hover:bg-green-600 px-6 py-3 rounded-lg text-white text-lg font-medium transition-colors duration-200' >
+            Cancel
+          </button>
+          </div> :
+          
           <button className='bg-green-500 hover:bg-green-600 px-6 py-3 rounded-lg text-white text-lg font-medium transition-colors duration-200' >
             Add Expense
           </button>
+}
         </div>
+          
       </form>
     </div>
   )
